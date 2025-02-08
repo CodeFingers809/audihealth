@@ -1,13 +1,20 @@
-import './App.css'
-import HomePage from './pages/LandingPage'
+import React from "react";
+import { Routes, Route } from "react-router-dom";
+import LandingPage from "./pages/LandingPage";
+import HealthCheck from "./components/HealthCheck";
+import AppLayout from "./pages/AppLayout";
+import Dashboard from "./pages/Dashboard";
 
-function App() {
-
+const App = () => {
   return (
-    <>
-        <HomePage />
-    </>
-  )
-}
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route element={<AppLayout />}>
+        <Route path="/health" element={<HealthCheck />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+      </Route>
+    </Routes>
+  );
+};
 
-export default App
+export default App;

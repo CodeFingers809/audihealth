@@ -1,7 +1,7 @@
 import React from "react";
 import { ArrowRight, Check, Menu, Mic, Heart, AlertCircle } from "lucide-react";
 
-const HomePage = () => {
+const LandingPage = () => {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 
   return (
@@ -313,4 +313,4 @@ const HomePage = () => {
   );
 };
 
-export default HomePage;
+export default LandingPage;
