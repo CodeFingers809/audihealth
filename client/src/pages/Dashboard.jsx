@@ -313,9 +313,6 @@ export default function Dashboard() {
                         <p className="text-sm text-gray-600">
                           3 exercises completed this week
                         </p>
-                        <Button className="w-full mt-4 bg-pink-500 hover:bg-pink-600 text-white">
-                          Start Exercise
-                        </Button>
                       </div>
                     </Card>
                   )
