@@ -12,7 +12,9 @@
   "dependencies": {
     "@headlessui/react": "^2.2.0",
     "axios": "^1.7.9",
+    "js-cookie": "^3.0.5",
     "lucide-react": "^0.475.0",
+    "moment-timezone": "^0.5.47",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-markdown": "^9.0.3",

@@ -1,29 +1,31 @@
 import { Router } from "express";
-import { loginUser, logoutUser, refreshAccessToken, registerUser, getCurrentUser } from "../controllers/user.controller.js";
+import {
+    loginUser,
+    logoutUser,
+    refreshAccessToken,
+    registerUser,
+    forgotPassword,
+    resetPassword,
+    updateProfile,
+    changePassword
+} from "../controllers/user.controller.js";
+
 import { verifyUserJWT } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 
-router.route("/register").post(
-    registerUser
-)
+// Authentication routes
+router.post("/register", registerUser);
+router.post("/login", loginUser);
+router.post("/logout", verifyUserJWT, logoutUser);
+router.post("/user/refresh-token", refreshAccessToken);
 
-router.route("/login").post(
-    loginUser
-)
+// Password management
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password/:token", resetPassword);
 
-router.route("/logout").post(
-    verifyUserJWT,
-    logoutUser
-)
-
-router.route("/user/refresh-token").post(
-    refreshAccessToken
-)
-
-router.route("/user").get(
-    verifyUserJWT,
-    getCurrentUser
-)
+// Profile management
+router.put("/update-profile", verifyUserJWT, updateProfile);
+router.put("/change-password", verifyUserJWT, changePassword);
 
 export default router;

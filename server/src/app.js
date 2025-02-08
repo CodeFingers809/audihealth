@@ -24,9 +24,13 @@ app.use(cookieParser())
 // Import Routes
 import userRouter from "./routes/user.routes.js"
 import aiModelRouter from "./routes/aimodel.routes.js"
+import reportRouter from "./routes/report.routes.js";
+import exerciseRoutes from "./routes/exercise.routes.js";
 
 // Declare Routes
 app.use("/api/users", userRouter); 
 app.use("/api/chat", aiModelRouter); 
+app.use("/api/reports", reportRouter); 
+app.use("/api/exercises", exerciseRoutes);
 
 export {app};

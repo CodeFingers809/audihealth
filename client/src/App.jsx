@@ -7,19 +7,28 @@ import Dashboard from "./pages/Dashboard";
 import AudiBuddy from "./pages/AudiBuddy";
 import ExercisesPage from "./pages/Exercises";
 import AuthPages from "./pages/AuthPages";
+import ProtectedRoute from "./components/ProtectedRoute";
+import { AuthProvider } from "./context/AuthContext";
 
 const App = () => {
   return (
-    <Routes>
-      <Route path="/" element={<LandingPage />} />
-      <Route element={<AppLayout />}>
-        <Route path="/health" element={<HealthCheck />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/audibuddy" element={<AudiBuddy />} />
-        <Route path="/exercise" element={<ExercisesPage />} />
-      </Route>
-      <Route path="/auth" element={<AuthPages />} />
-    </Routes>
+    <AuthProvider>
+      <Routes>
+        {/* Public Routes */}
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/auth" element={<AuthPages />} />
+
+        {/* Protected Routes */}
+        <Route element={<ProtectedRoute />}>
+          <Route element={<AppLayout />}>
+            <Route path="/health" element={<HealthCheck />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/audibuddy" element={<AudiBuddy />} />
+            <Route path="/exercise" element={<ExercisesPage />} />
+          </Route>
+        </Route>
+      </Routes>
+    </AuthProvider>
   );
 };
 
