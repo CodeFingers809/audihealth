@@ -5,6 +5,7 @@ import HealthCheck from "./components/HealthCheck";
 import AppLayout from "./pages/AppLayout";
 import Dashboard from "./pages/Dashboard";
 import AudiBuddy from "./pages/AudiBuddy"
+import ExercisesPage from "./pages/Exercises";
 
 const App = () => {
   return (
@@ -14,6 +15,7 @@ const App = () => {
         <Route path="/health" element={<HealthCheck />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/audibuddy" element={<AudiBuddy />} />
+        <Route path="/exercise" element={<ExercisesPage />} />
       </Route>
     </Routes>
   );

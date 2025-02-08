@@ -1,9 +1,5 @@
 import React from "react";
-import {
-  LayoutDashboard,
-  Bot,
-  ClipboardPlus,
-} from "lucide-react";
+import { LayoutDashboard, Bot, ClipboardPlus, Dumbbell } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const sidebarLinks = [
@@ -25,14 +21,17 @@ const sidebarLinks = [
     icon: Bot,
     color: "text-pink-500",
   },
-
+  {
+    title: "Exercise",
+    href: "/exercise",
+    icon: Dumbbell,
+    color: "text-pink-500",
+  },
 ];
 
 const Sidebar = ({ children }) => {
   return (
-    <div
-      className="flex min-h-screen"
-    >
+    <div className="flex min-h-screen">
       {/* Sidebar */}
       <aside className="hidden md:flex md:flex-col w-64 bg-white shadow-lg h-screen fixed top-0 left-0 z-50">
         <div className="p-6 border-b border-pink-100">
