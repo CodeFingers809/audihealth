@@ -1,10 +1,9 @@
 import React from "react";
 import { ArrowRight, Check, Menu, Mic, Heart, AlertCircle } from "lucide-react";
 import Navbar from "../components/Navbar";
+import { Link } from "react-router-dom";
 
 const LandingPage = () => {
-
-
   return (
     <div
       className="font-inter bg-white min-h-screen relative"
@@ -47,12 +46,12 @@ const LandingPage = () => {
                 Get accurate voice health reports and personalized vocal
                 exercises to maintain and improve your vocal wellness.
               </p>
-              <div className="flex justify-center gap-4 mt-8">
+              <Link to={"/health"} className="flex justify-center gap-4 mt-8">
                 <button className="rounded-full px-8 py-6 text-lg gap-2 bg-pink-500 hover:bg-pink-600 text-white inline-flex items-center">
                   Start Your Voice Journey{" "}
                   <ArrowRight className="ml-2" size={18} />
                 </button>
-              </div>
+              </Link>
             </div>
 
             {/* New Laptop Mockup Section */}

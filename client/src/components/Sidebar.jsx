@@ -1,5 +1,9 @@
 import React from "react";
-import { LayoutDashboard, Bot, Newspaper, Settings } from "lucide-react";
+import {
+  LayoutDashboard,
+  Bot,
+  ClipboardPlus,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 
 const sidebarLinks = [
@@ -12,7 +16,7 @@ const sidebarLinks = [
   {
     title: "Diagnosis",
     href: "/health",
-    icon: LayoutDashboard,
+    icon: ClipboardPlus,
     color: "text-pink-500",
   },
   {

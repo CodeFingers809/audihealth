@@ -1,6 +1,7 @@
 import React from 'react'
 import { Link } from "react-router-dom";
 import { ArrowRight, Check, Menu, Mic, Heart, AlertCircle } from "lucide-react";
+import logo from "../assets/logo.jpeg"
 
 const Navbar = () => {
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
@@ -18,7 +19,7 @@ const Navbar = () => {
           <div className="flex justify-between items-center py-4">
             {/* Logo Section */}
             <Link to="/" className="flex items-center space-x-2 animate-fadeIn">
-              <Mic className="w-8 h-8 text-pink-500" />
+              <img src={logo} className="w-8 h-10" />
               <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-400 to-pink-600">
                 AudiHealth
               </span>
