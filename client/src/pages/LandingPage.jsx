@@ -1,109 +1,24 @@
 import React from "react";
 import { ArrowRight, Check, Menu, Mic, Heart, AlertCircle } from "lucide-react";
+import Navbar from "../components/Navbar";
 
 const LandingPage = () => {
-  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+
 
   return (
     <div
       className="font-inter bg-white min-h-screen relative"
-      // className="fixed inset-0 pointer-events-none"
       style={{
         backgroundImage: `
             linear-gradient(to right, #FFE5EC 1px, transparent 1px),
             linear-gradient(to bottom, #FFE5EC 1px, transparent 1px)
           `,
         backgroundSize: "40px 40px",
-        zIndex: -1,
+        zIndex: 0,
       }}
     >
-      {/* Grid Background */}
-      <div />
-
-      {/* Main content wrapper to ensure it stays above grid */}
       <div className="relative z-10">
-        <header className="fixed w-full bg-white/80 backdrop-blur-sm z-50 border-b border-pink-100">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center py-4">
-              <div className="flex items-center space-x-2 animate-fadeIn">
-                <Mic className="w-8 h-8 text-pink-500" />
-                <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-400 to-pink-600">
-                  AudiHealth
-                </span>
-              </div>
-              <nav className="hidden md:flex items-center space-x-6">
-                <a
-                  href="/"
-                  className="text-gray-800 font-medium hover:text-pink-500 transition-colors"
-                >
-                  Home
-                </a>
-                <a
-                  href="/exercises"
-                  className="text-gray-600 font-medium hover:text-pink-500 transition-colors"
-                >
-                  Exercises
-                </a>
-                <a
-                  href="/reports"
-                  className="text-gray-600 font-medium hover:text-pink-500 transition-colors"
-                >
-                  Reports
-                </a>
-                <button className="px-4 py-2 bg-pink-500 text-white rounded-full hover:bg-pink-600 transition-colors">
-                  Login
-                </button>
-              </nav>
-              <div className="md:hidden">
-                <button
-                  onClick={() => setIsMenuOpen(!isMenuOpen)}
-                  className="p-2 text-gray-600 hover:text-pink-500"
-                >
-                  <Menu className="w-6 h-6" />
-                </button>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        {/* Mobile Menu */}
-        {isMenuOpen && (
-          <div className="md:hidden fixed inset-0 z-50 bg-white">
-            <div className="p-4">
-              <div className="flex justify-end">
-                <button
-                  onClick={() => setIsMenuOpen(false)}
-                  className="p-2 text-gray-600 hover:text-pink-500"
-                >
-                  ✕
-                </button>
-              </div>
-              <div className="flex flex-col space-y-4 p-4">
-                <a
-                  href="/"
-                  className="text-gray-800 font-medium hover:text-pink-500 transition-colors"
-                >
-                  Home
-                </a>
-                <a
-                  href="/exercises"
-                  className="text-gray-600 font-medium hover:text-pink-500 transition-colors"
-                >
-                  Exercises
-                </a>
-                <a
-                  href="/reports"
-                  className="text-gray-600 font-medium hover:text-pink-500 transition-colors"
-                >
-                  Reports
-                </a>
-                <button className="px-4 py-2 bg-pink-500 text-white rounded-full hover:bg-pink-600 transition-colors">
-                  Login
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        <Navbar />
 
         <main className="pt-24 pb-16">
           <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

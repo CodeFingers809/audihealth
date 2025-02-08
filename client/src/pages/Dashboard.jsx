@@ -18,6 +18,7 @@ import {
   ArrowUpRight,
   ArrowDownRight,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 // Sample data
 const sampleData = {
@@ -164,11 +165,13 @@ export default function Dashboard() {
               </p>
             </div>
 
-            <Button className="bg-pink-500 hover:bg-pink-600 text-white">
-              Start New Recording
-              <Mic className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
+            <Link to={"/health"}>
+              <Button className="bg-pink-500 hover:bg-pink-600 text-white">
+                Start New Recording
+                <Mic className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+          </div>  
 
           {/* Metrics Overview */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

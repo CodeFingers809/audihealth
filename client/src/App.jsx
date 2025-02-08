@@ -4,6 +4,7 @@ import LandingPage from "./pages/LandingPage";
 import HealthCheck from "./components/HealthCheck";
 import AppLayout from "./pages/AppLayout";
 import Dashboard from "./pages/Dashboard";
+import AudiBuddy from "./pages/AudiBuddy"
 
 const App = () => {
   return (
@@ -12,6 +13,7 @@ const App = () => {
       <Route element={<AppLayout />}>
         <Route path="/health" element={<HealthCheck />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/audibuddy" element={<AudiBuddy />} />
       </Route>
     </Routes>
   );
