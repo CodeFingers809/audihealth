@@ -3,6 +3,8 @@ import { ArrowRight, Check, Menu, Mic, Heart, AlertCircle } from "lucide-react";
 import Navbar from "../components/Navbar";
 import { Link } from "react-router-dom";
 import dashboardImg from "../assets/dashboard.png"
+import wqr from "../assets/wqr.png"
+// import Image from "react"
 
 const LandingPage = () => {
   return (
@@ -133,15 +135,43 @@ const LandingPage = () => {
               </div>
             </div>
 
-            <div className="mt-16 animate-fadeInUp">
-              <div className="bg-pink-50 p-8 rounded-2xl border border-pink-100 shadow-lg">
-                <img
-                  src="/api/placeholder/800/400"
-                  alt="AudiHealth Demo"
-                  className="rounded-xl shadow-md w-full"
-                />
+            {/* WhatsApp Integration Section */}
+            <section className="mt-24 bg-pink-100 p-8 rounded-2xl border border-pink-500 shadow-lg z-50">
+              <div className="grid md:grid-cols-2 gap-12 items-center">
+                <div className="space-y-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    {/* <Share2 className="text-black-600 w-8 h-8" /> */}
+                    <h2 className="text-3xl font-semibold">
+                      Get Reports Instantly
+                    </h2>
+                  </div>
+                  <p className="text-lg text-muted-foreground">
+                    Generate comprehensive reports and act immediately on your voice health.
+                  </p>
+                  <div className="bg-muted p-6 rounded-xl">
+                    <p className="font-medium flex items-center gap-2">
+                      <span className="text-black-600">➤</span> Send
+                      <code className="mx-2 px-2 py-1 bg-primary/10 text-primary rounded">
+                        join put-rice
+                      </code>
+                      to
+                    </p>
+                    <p className="text-xl font-bold mt-2 flex items-center">
+                      <span className="bg-black-100 text-black-800 px-3 py-1 rounded-lg mr-2">
+                        WhatsApp
+                      </span>
+                      +1 415 523 8886
+                    </p>
+                  </div>
+                </div>
+                <div className="flex justify-center">
+                  <div className="rounded-xl border-2 border-purple-600 p-4 bg-white w-[220px] h-[220px] overflow-hidden ">
+                    {/* Placeholder for QR Code */}
+                    <img src={wqr} className="w-fit" />
+                  </div>
+                </div>
               </div>
-            </div>
+            </section>
 
             <section className="mt-24 grid md:grid-cols-3 gap-8 animate-fadeInUp">
               {[
