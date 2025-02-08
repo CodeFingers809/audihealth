@@ -1,6 +1,5 @@
-"use client";
 import React, { useState, useRef, useEffect } from "react";
-import { Send, Mic, ThumbsUp, ThumbsDown } from "lucide-react";
+import { Send, Mic } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 
 const ChatMessage = ({ message, isUser }) => {
@@ -18,30 +17,7 @@ const ChatMessage = ({ message, isUser }) => {
               isUser ? "bg-pink-500 text-white" : "bg-pink-50"
             }`}
           >
-            <ReactMarkdown
-              className={`markdown ${isUser ? "text-white" : "text-gray-900"}`}
-              components={{
-                p: ({ children }) => (
-                  <p className="mb-2 last:mb-0">{children}</p>
-                ),
-                ul: ({ children }) => (
-                  <ul className="list-disc ml-4 mb-2">{children}</ul>
-                ),
-                ol: ({ children }) => (
-                  <ol className="list-decimal ml-4 mb-2">{children}</ol>
-                ),
-                li: ({ children }) => <li className="mb-1">{children}</li>,
-                strong: ({ children }) => (
-                  <strong className="font-bold">{children}</strong>
-                ),
-                em: ({ children }) => <em className="italic">{children}</em>,
-                code: ({ children }) => (
-                  <code className="bg-pink-100 text-pink-800 px-1 rounded">
-                    {children}
-                  </code>
-                ),
-              }}
-            >
+            <ReactMarkdown className={`markdown ${isUser ? "text-white" : "text-gray-900"}`}>
               {message.content}
             </ReactMarkdown>
           </div>
@@ -81,30 +57,37 @@ const AudiBuddy = () => {
         }),
         status: true,
       };
-
+  
       setMessages((prev) => [...prev, userMessage]);
       setInputValue("");
       setIsLoading(true);
-
+  
       try {
-        const response = await fetch("/api/chat", {
+        const response = await fetch("http://localhost:8000/api/chat", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ message: inputValue }),
         });
-
+  
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-
+  
         const data = await response.json();
-        if (data.status === "success") {
-          setMessages((prev) => [...prev, data.response]);
-        } else {
-          throw new Error(data.message || "Server error");
-        }
+  
+        const botMessage = {
+          type: "text",
+          content: data.message,
+          timestamp: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          status: false,
+        };
+  
+        setMessages((prev) => [...prev, botMessage]);
       } catch (error) {
         console.error("Error:", error);
         const errorMessage = {
@@ -114,7 +97,7 @@ const AudiBuddy = () => {
             hour: "2-digit",
             minute: "2-digit",
           }),
-          status: true,
+          status: false,
         };
         setMessages((prev) => [...prev, errorMessage]);
       } finally {
@@ -122,7 +105,7 @@ const AudiBuddy = () => {
       }
     }
   };
-
+  
   const handleKeyPress = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
