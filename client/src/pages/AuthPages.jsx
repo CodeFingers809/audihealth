@@ -1,40 +1,40 @@
 import React, { useState, useContext } from "react";
-import axios from "axios";
-import { Mail, User, Lock, ArrowRight, Eye, EyeOff } from "lucide-react";
+import { Mail, User, Lock, Eye, EyeOff } from "lucide-react";
 import { AuthContext } from "../context/AuthContext";
 
 const AuthPages = () => {
-  const { login } = useContext(AuthContext);
+  const { login, register } = useContext(AuthContext);
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState({ fullName: "", email: "", username: "", password: "" });
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    username: "",
+    password: ""
+  });
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Handle input changes
-  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setError(null);
+  };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
 
     try {
-      if (isLogin) {
-        // ✅ Sign in
-        await login(formData);
-      } else {
-        // ✅ Sign up
-        const { data } = await axios.post("http://localhost:8000/api/users/register", formData, { withCredentials: true });
+      const result = isLogin
+        ? await login(formData)
+        : await register(formData);
 
-        if (data.success) {
-          // ✅ Automatically login after signup
-          await login({ email: formData.email, password: formData.password });
-        }
+      if (!result.success) {
+        setError(result.message);
       }
     } catch (err) {
-      setError(err.response?.data?.message || "Something went wrong. Please try again.");
+      setError("An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -43,34 +43,83 @@ const AuthPages = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-lg">
-        <h2 className="text-2xl font-bold text-center">{isLogin ? "Sign In" : "Create Account"}</h2>
-        {error && <p className="text-red-500 text-center mt-2">{error}</p>}
+        <h2 className="text-2xl font-bold text-center mb-6">
+          {isLogin ? "Welcome Back" : "Create Account"}
+        </h2>
+        
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
+            {error}
+          </div>
+        )}
 
-        <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="space-y-4">
           {!isLogin && (
-            <InputField name="fullName" label="Full Name" icon={<User />} value={formData.fullName} onChange={handleChange} />
+            <InputField
+              name="fullName"
+              label="Full Name"
+              icon={<User className="w-5 h-5 text-gray-400" />}
+              value={formData.fullName}
+              onChange={handleChange}
+              required
+            />
           )}
-          <InputField name="email" label="Email" type="email" icon={<Mail />} value={formData.email} onChange={handleChange} />
-          <InputField name="username" label="Username" icon={<User />} value={formData.username} onChange={handleChange} />
+          
+          <InputField
+            name="email"
+            type="email"
+            label="Email"
+            icon={<Mail className="w-5 h-5 text-gray-400" />}
+            value={formData.email}
+            onChange={handleChange}
+            required
+          />
+          
+          <InputField
+            name="username"
+            label="Username"
+            icon={<User className="w-5 h-5 text-gray-400" />}
+            value={formData.username}
+            onChange={handleChange}
+            required
+          />
+          
           <InputField
             name="password"
-            label="Password"
             type={showPassword ? "text" : "password"}
-            icon={<Lock />}
+            label="Password"
+            icon={<Lock className="w-5 h-5 text-gray-400" />}
             value={formData.password}
             onChange={handleChange}
+            required
             togglePassword={() => setShowPassword(!showPassword)}
             showPassword={showPassword}
           />
 
-          <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded-lg mt-4" disabled={loading}>
-            {loading ? "Processing..." : isLogin ? "Sign In" : "Sign Up"}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-pink-500 text-white py-2 rounded-lg hover:bg-pink-600 transition-colors disabled:opacity-50"
+          >
+            {loading ? "Processing..." : isLogin ? "Sign In" : "Create Account"}
           </button>
         </form>
 
-        <p className="text-center mt-4">
+        <p className="text-center mt-4 text-gray-600">
           {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
-          <button className="text-blue-600 underline" onClick={() => setIsLogin(!isLogin)}>
+          <button
+            onClick={() => {
+              setIsLogin(!isLogin);
+              setError(null);
+              setFormData({
+                fullName: "",
+                email: "",
+                username: "",
+                password: ""
+              });
+            }}
+            className="text-pink-500 hover:text-pink-600"
+          >
             {isLogin ? "Sign up" : "Sign in"}
           </button>
         </p>
@@ -79,16 +128,44 @@ const AuthPages = () => {
   );
 };
 
-// Reusable Input Field Component
-const InputField = ({ name, label, type = "text", icon, value, onChange, togglePassword, showPassword }) => (
+const InputField = ({
+  name,
+  label,
+  type = "text",
+  icon,
+  value,
+  onChange,
+  required,
+  togglePassword,
+  showPassword
+}) => (
   <div>
-    <label className="block text-sm font-medium">{label}</label>
+    <label className="block text-sm font-medium text-gray-700 mb-1">
+      {label}
+    </label>
     <div className="relative">
-      <span className="absolute inset-y-0 left-2 flex items-center">{icon}</span>
-      <input type={type} name={name} value={value} onChange={onChange} className="w-full pl-10 p-2 border rounded-lg" />
+      <span className="absolute left-3 top-1/2 -translate-y-1/2">
+        {icon}
+      </span>
+      <input
+        type={type}
+        name={name}
+        value={value}
+        onChange={onChange}
+        required={required}
+        className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+      />
       {togglePassword && (
-        <button type="button" className="absolute inset-y-0 right-2" onClick={togglePassword}>
-          {showPassword ? <EyeOff /> : <Eye />}
+        <button
+          type="button"
+          onClick={togglePassword}
+          className="absolute right-3 top-1/2 -translate-y-1/2"
+        >
+          {showPassword ? (
+            <EyeOff className="w-5 h-5 text-gray-400" />
+          ) : (
+            <Eye className="w-5 h-5 text-gray-400" />
+          )}
         </button>
       )}
     </div>

@@ -1,17 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
-import Cookies from "js-cookie"; // 🔹 Import js-cookie
 import { ChevronDown, ChevronUp, CheckCircle, Circle } from "lucide-react";
+import { AuthContext } from "../context/AuthContext";
 
 // Custom Card Component
 const Card = ({ children, className = "" }) => (
   <div className={`bg-white rounded-lg shadow-md ${className}`}>{children}</div>
 );
 
-// API Base URL
-const API_URL = "http://localhost:8000/api"; // Change this if your backend is deployed
-
-// 🔹 Define exerciseCategories
 const exerciseCategories = {
   breathing: {
     title: "Breathing Exercises",
@@ -42,7 +38,10 @@ const exerciseCategories = {
   },
 };
 
-const ExerciseSection = ({ category, exercises, isOpen, onToggle, completedExercises, onExerciseToggle }) => {
+const ExerciseSection = ({ category, exercises, isOpen, onToggle, completedExercises = [], onExerciseToggle }) => {
+  // Ensure completedExercises is always an array
+  const completed = Array.isArray(completedExercises) ? completedExercises : [];
+  
   return (
     <Card className="mb-4 overflow-hidden">
       <button onClick={onToggle} className="w-full p-6 flex items-center justify-between bg-white hover:bg-pink-50 transition-colors">
@@ -66,7 +65,11 @@ const ExerciseSection = ({ category, exercises, isOpen, onToggle, completedExerc
                   <p className="text-sm text-gray-600 mt-1">{exercise.instructions}</p>
                 </div>
                 <button onClick={() => onExerciseToggle(exercise.id)} className="ml-4 p-2 hover:bg-pink-50 rounded-full transition-colors">
-                  {completedExercises.includes(exercise.id) ? <CheckCircle className="h-6 w-6 text-pink-500" /> : <Circle className="h-6 w-6 text-gray-400" />}
+                  {completed.includes(exercise.id) ? (
+                    <CheckCircle className="h-6 w-6 text-pink-500" />
+                  ) : (
+                    <Circle className="h-6 w-6 text-gray-400" />
+                  )}
                 </button>
               </div>
             </div>
@@ -78,57 +81,72 @@ const ExerciseSection = ({ category, exercises, isOpen, onToggle, completedExerc
 };
 
 const ExercisesPage = () => {
+  const { user } = useContext(AuthContext);
   const [openSections, setOpenSections] = useState([]);
   const [completedExercises, setCompletedExercises] = useState([]);
   const [totalExercises, setTotalExercises] = useState(0);
-  const userId = Cookies.get("userId"); // 🔹 Get userId from cookies
-  const token = Cookies.get("token"); // 🔹 Get JWT token from cookies
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchExerciseProgress();
+    calculateTotalExercises();
   }, []);
+
+  const calculateTotalExercises = () => {
+    const total = Object.values(exerciseCategories).reduce(
+      (acc, cat) => acc + cat.exercises.length,
+      0
+    );
+    setTotalExercises(total);
+  };
 
   const fetchExerciseProgress = async () => {
     try {
-      if (!userId || !token) {
-        console.warn("User not logged in!");
-        return;
-      }
-
-      const response = await axios.get(`${API_URL}/exercises/progress/${userId}`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const response = await axios.get(`http://localhost:8000/api/exercises/progress`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
       });
-
-      const todayProgress = response.data.find((entry) => entry.date === new Date().toISOString().split("T")[0]);
-      setCompletedExercises(todayProgress ? todayProgress.completedExercises : []);
-      setTotalExercises(Object.values(exerciseCategories).reduce((acc, cat) => acc + cat.exercises.length, 0));
+  
+      if (response.data.success) {
+        const todayExercises = response.data.todayProgress?.completedExercises || [];
+        setCompletedExercises(todayExercises);
+      }
     } catch (error) {
       console.error("Error fetching exercise progress:", error);
+      setCompletedExercises([]); // Ensure completedExercises is always an array
+    } finally {
+      setLoading(false);
     }
   };
+  
+  
 
   const toggleExercise = async (exerciseId) => {
+    const currentCompleted = Array.isArray(completedExercises) ? completedExercises : [];
+    const updatedExercises = currentCompleted.includes(exerciseId)
+      ? currentCompleted.filter(id => id !== exerciseId)
+      : [...currentCompleted, exerciseId];
+
+    setCompletedExercises(updatedExercises);
+
     try {
-      if (!userId || !token) {
-        console.warn("User not logged in!");
-        return;
-      }
-
-      const updatedExercises = completedExercises.includes(exerciseId)
-        ? completedExercises.filter((id) => id !== exerciseId)
-        : [...completedExercises, exerciseId];
-
-      setCompletedExercises(updatedExercises);
-
       await axios.post(
-        `${API_URL}/exercises/track`,
-        { userId, completedExercises: updatedExercises },
-        { headers: { Authorization: `Bearer ${token}` } }
+        `http://localhost:8000/api/exercises/track`,
+        { completedExercises: updatedExercises },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`
+          }
+        }
       );
     } catch (error) {
-      console.error("Error updating exercise:", error);
+      console.error("Error updating exercise progress:", error);
+      setCompletedExercises(currentCompleted); // Revert on error
     }
   };
+
+  if (loading) {
+    return <div className="text-center py-8">Loading...</div>;
+  }
 
   return (
     <div className="min-h-screen relative bg-gray-100 p-6">
@@ -139,7 +157,7 @@ const ExercisesPage = () => {
         <Card className="px-6 py-4">
           <p className="text-sm text-gray-600">Today's Progress</p>
           <p className="text-2xl font-bold text-pink-500">
-            {completedExercises.length} / {totalExercises}
+            {Array.isArray(completedExercises) ? completedExercises.length : 0} / {totalExercises}
           </p>
         </Card>
 
@@ -151,7 +169,9 @@ const ExercisesPage = () => {
               exercises={category.exercises}
               isOpen={openSections.includes(key)}
               onToggle={() =>
-                setOpenSections((prev) => (prev.includes(key) ? prev.filter((sec) => sec !== key) : [...prev, key]))
+                setOpenSections((prev) =>
+                  prev.includes(key) ? prev.filter((sec) => sec !== key) : [...prev, key]
+                )
               }
               completedExercises={completedExercises}
               onExerciseToggle={toggleExercise}

@@ -3,7 +3,6 @@ import { User } from "../models/user.model.js";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 
-// Generate tokens
 const generateAccessAndRefreshTokens = async (userId) => {
     try {
         const user = await User.findById(userId);
@@ -15,175 +14,167 @@ const generateAccessAndRefreshTokens = async (userId) => {
 
         return { accessToken, refreshToken };
     } catch (error) {
-        console.error(error);
+        throw new Error("Error while generating tokens");
     }
 };
 
-// Register User
 export const registerUser = asyncHandler(async (req, res) => {
     const { email, username, fullName, password } = req.body;
 
     if ([email, username, fullName, password].some((field) => !field?.trim())) {
-        return res.status(400).json({ success: false, message: "All fields are necessary" });
+        return res.status(400).json({ success: false, message: "All fields are required" });
     }
 
-    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
+    const existingUser = await User.findOne({
+        $or: [{ email }, { username }]
+    });
 
     if (existingUser) {
-        return res.status(409).json({ success: false, message: "User with same email or username exists" });
+        return res.status(409).json({
+            success: false,
+            message: "User with email or username already exists"
+        });
     }
 
-    const user = await User.create({ fullName, email, username: username.toLowerCase(), password });
+    const user = await User.create({
+        fullName,
+        email: email.toLowerCase(),
+        username: username.toLowerCase(),
+        password
+    });
+
     const createdUser = await User.findById(user._id).select("-password -refreshToken");
 
     if (!createdUser) {
-        return res.status(500).json({ success: false, message: "User was created but not found when queried" });
+        return res.status(500).json({
+            success: false,
+            message: "Something went wrong while registering the user"
+        });
     }
 
-    return res.status(201).json({ data: createdUser, message: "User created successfully", success: true });
+    return res.status(201).json({
+        success: true,
+        message: "User registered successfully",
+        user: createdUser
+    });
 });
 
-// Login User
 export const loginUser = asyncHandler(async (req, res) => {
     const { email, username, password } = req.body;
 
-    if (!username && !email) {
-        return res.status(400).json({ success: false, message: "Username or Email is required" });
+    if (!email && !username) {
+        return res.status(400).json({
+            success: false,
+            message: "Username or email is required"
+        });
     }
-
-    const user = await User.findOne({ $or: [{ email }, { username }] });
-
-    if (!user || !(await user.isPasswordCorrect(password))) {
-        return res.status(401).json({ success: false, message: "Invalid credentials" });
-    }
-
-    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id);
-
-    return res
-        .status(200)
-        .cookie("accessToken", accessToken, { httpOnly: true, secure: true })
-        .cookie("refreshToken", refreshToken, { httpOnly: true, secure: true })
-        .json({ success: true, user, accessToken, refreshToken, message: "User logged in successfully" });
-});
-
-// Logout User
-export const logoutUser = asyncHandler(async (req, res) => {
-    await User.findByIdAndUpdate(req.user._id, { refreshToken: undefined });
-
-    return res
-        .status(200)
-        .clearCookie("accessToken")
-        .clearCookie("refreshToken")
-        .json({ success: true, message: "User logged out successfully" });
-});
-
-// Refresh Access Token
-export const refreshAccessToken = asyncHandler(async (req, res) => {
-    const incomingRefreshToken = req.cookies?.refreshToken || req.body?.refreshToken || req.header("Authorization")?.replace("Bearer ", "");
-
-    if (!incomingRefreshToken) {
-        return res.status(401).json({ success: false, message: "Unauthorized request" });
-    }
-
-    const decodedToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET);
-    const user = await User.findById(decodedToken._id);
-
-    if (!user || incomingRefreshToken !== user?.refreshToken) {
-        return res.status(401).json({ success: false, message: "Invalid or expired refresh token" });
-    }
-
-    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id);
-
-    return res.status(200).cookie("accessToken", accessToken, { httpOnly: true, secure: true }).cookie("refreshToken", refreshToken, { httpOnly: true, secure: true }).json({ success: true, accessToken, refreshToken, message: "Access Token refreshed" });
-});
-
-export const forgotPassword = asyncHandler(async (req, res) => {
-    const { email } = req.body;
-
-    if (!email) {
-        return res.status(400).json({ success: false, message: "Email is required" });
-    }
-
-    const user = await User.findOne({ email });
-
-    if (!user) {
-        return res.status(404).json({ success: false, message: "User not found" });
-    }
-
-    const resetToken = crypto.randomBytes(32).toString("hex");
-    const hashedToken = crypto.createHash("sha256").update(resetToken).digest("hex");
-
-    user.resetPasswordToken = hashedToken;
-    user.resetPasswordExpire = Date.now() + 10 * 60 * 1000; // 10 minutes
-
-    await user.save({ validateBeforeSave: false });
-
-    // Here, send an email with `resetToken`
-    return res.status(200).json({
-        success: true,
-        message: "Password reset token generated. Send this token via email",
-        resetToken
-    });
-});
-
-// Reset Password
-export const resetPassword = asyncHandler(async (req, res) => {
-    const { token } = req.params;
-    const { newPassword } = req.body;
-
-    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 
     const user = await User.findOne({
-        resetPasswordToken: hashedToken,
-        resetPasswordExpire: { $gt: Date.now() }
+        $or: [{ email }, { username }]
     });
 
-    if (!user) {
-        return res.status(400).json({ success: false, message: "Invalid or expired reset token" });
+    if (!user || !(await user.isPasswordCorrect(password))) {
+        return res.status(401).json({
+            success: false,
+            message: "Invalid credentials"
+        });
     }
 
-    user.password = newPassword;
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpire = undefined;
+    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id);
+    const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
 
-    await user.save();
-
-    return res.status(200).json({ success: true, message: "Password reset successful" });
+    return res
+        .status(200)
+        .cookie("accessToken", accessToken, {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'None'
+        })
+        .cookie("refreshToken", refreshToken, {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'None'
+        })
+        .json({
+            success: true,
+            user: loggedInUser,
+            accessToken,
+            message: "User logged in successfully"
+        });
 });
 
-// Update Profile
-export const updateProfile = asyncHandler(async (req, res) => {
-    const { fullName, username } = req.body;
 
-    if (!fullName && !username) {
-        return res.status(400).json({ success: false, message: "Nothing to update" });
-    }
-
-    const updatedUser = await User.findByIdAndUpdate(
+export const logoutUser = asyncHandler(async (req, res) => {
+    await User.findByIdAndUpdate(
         req.user._id,
-        { fullName, username: username.toLowerCase() },
-        { new: true, runValidators: true }
-    ).select("-password -refreshToken");
+        { $unset: { refreshToken: 1 } },
+        { new: true }
+    );
 
-    return res.status(200).json({ success: true, user: updatedUser, message: "Profile updated successfully" });
+    return res
+        .status(200)
+        .clearCookie("accessToken", {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'None'
+        })
+        .clearCookie("refreshToken", {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'None'
+        })
+        .json({
+            success: true,
+            message: "User logged out successfully"
+        });
 });
 
-// Change Password
-export const changePassword = asyncHandler(async (req, res) => {
-    const { oldPassword, newPassword } = req.body;
 
-    if (!oldPassword || !newPassword) {
-        return res.status(400).json({ success: false, message: "Both old and new passwords are required" });
+export const refreshAccessToken = asyncHandler(async (req, res) => {
+    const incomingRefreshToken = req.cookies?.refreshToken;
+
+    if (!incomingRefreshToken) {
+        return res.status(401).json({
+            success: false,
+            message: "Unauthorized request - No refresh token"
+        });
     }
 
-    const user = await User.findById(req.user._id);
+    try {
+        const decodedToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET);
+        const user = await User.findById(decodedToken?._id);
 
-    if (!(await user.isPasswordCorrect(oldPassword))) {
-        return res.status(401).json({ success: false, message: "Old password is incorrect" });
+        if (!user || incomingRefreshToken !== user?.refreshToken) {
+            return res.status(401).json({
+                success: false,
+                message: "Invalid refresh token"
+            });
+        }
+
+        const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id);
+
+        return res
+            .status(200)
+            .cookie("accessToken", accessToken, {
+                httpOnly: true,
+                secure: true,
+                sameSite: 'None'
+            })
+            .cookie("refreshToken", refreshToken, {
+                httpOnly: true,
+                secure: true,
+                sameSite: 'None'
+            })
+            .json({
+                success: true,
+                accessToken,
+                user,
+                message: "Access token refreshed"
+            });
+    } catch (error) {
+        return res.status(401).json({
+            success: false,
+            message: "Invalid refresh token"
+        });
     }
-
-    user.password = newPassword;
-    await user.save();
-
-    return res.status(200).json({ success: true, message: "Password changed successfully" });
 });

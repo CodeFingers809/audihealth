@@ -37,7 +37,7 @@ const Navbar = () => {
                 Diagnose
               </Link>
               <Link
-                to="/login"
+                to="/auth"
                 className="px-4 py-2 bg-pink-500 text-white rounded-full hover:bg-pink-600 transition-colors"
               >
                 Login

@@ -1,33 +1,41 @@
 import { Exercise } from "../models/exercise.model.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
+import moment from 'moment-timezone'
 
-export const trackExercise = async (req, res) => {
-    try {
-        const { userId, completedExercises, confidenceScores } = req.body;
-        const date = new Date().toISOString().split("T")[0];
+export const trackExercise = asyncHandler(async (req, res) => {
+    const userId = req.user._id;
+    const { completedExercises } = req.body;
+    const date = moment().tz("Asia/Kolkata").format("YYYY-MM-DD");
 
-        const existingEntry = await Exercise.findOne({ userId, date });
+    let exercise = await Exercise.findOne({ userId, date });
 
-        if (existingEntry) {
-            existingEntry.completedExercises = completedExercises;
-            existingEntry.confidenceScores = confidenceScores;
-            await existingEntry.save();
-            return res.json({ message: "Exercise updated", exercise: existingEntry });
-        }
-
-        const newExercise = new Exercise({ userId, completedExercises, confidenceScores });
-        await newExercise.save();
-        res.status(201).json({ message: "Exercise logged", exercise: newExercise });
-    } catch (error) {
-        res.status(500).json({ message: "Server error" });
+    if (exercise) {
+        exercise.completedExercises = completedExercises;
+        await exercise.save();
+    } else {
+        exercise = await Exercise.create({ userId, completedExercises, date });
     }
-};
 
-export const getUserExercise = async (req, res) => {
-    try {
-        const { userId } = req.params;
-        const exercises = await Exercise.find({ userId }).sort({ date: -1 });
-        res.json(exercises);
-    } catch (error) {
-        res.status(500).json({ message: "Server error" });
-    }
-};
+    res.status(200).json({
+        success: true,
+        message: "Exercise progress updated",
+        exercise
+    });
+});
+
+export const getUserExercise = asyncHandler(async (req, res) => {
+    const userId = req.user._id;
+    const today = moment().tz("Asia/Kolkata").format("YYYY-MM-DD");
+
+    // Get today's progress
+    const todayProgress = await Exercise.findOne({ userId, date: today }) || { completedExercises: [] };
+
+    // Get last 7 days for trends
+    const pastWeek = await Exercise.find({ userId }).sort({ date: -1 }).limit(7);
+
+    res.status(200).json({
+        success: true,
+        todayProgress,
+        weeklyProgress: pastWeek.length ? pastWeek : [] // Ensure it's always an array
+    });
+});

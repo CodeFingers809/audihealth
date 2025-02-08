@@ -6,20 +6,14 @@ const app = express();
 
 app.use(cors({
     origin: process.env.CORS_ORIGIN || "http://localhost:5173",
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allow these methods
-    allowedHeaders: ['Content-Type', 'Authorization'], // Allow these headers
-    credentials: true
-  }));
-
-app.use(express.json());
-
-app.use(express.urlencoded({
-    extended: true,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// app.use(express.static("public"))
-
-app.use(cookieParser())
+app.use(express.json({ limit: "16kb" }));
+app.use(express.urlencoded({ extended: true, limit: "16kb" }));
+app.use(cookieParser());
 
 // Import Routes
 import userRouter from "./routes/user.routes.js"
@@ -27,10 +21,10 @@ import aiModelRouter from "./routes/aimodel.routes.js"
 import reportRouter from "./routes/report.routes.js";
 import exerciseRoutes from "./routes/exercise.routes.js";
 
-// Declare Routes
-app.use("/api/users", userRouter); 
-app.use("/api/chat", aiModelRouter); 
-app.use("/api/reports", reportRouter); 
+// Routes
+app.use("/api/users", userRouter);
+app.use("/api/chat", aiModelRouter);
+app.use("/api/reports", reportRouter);
 app.use("/api/exercises", exerciseRoutes);
 
-export {app};
+export { app };

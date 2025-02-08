@@ -4,59 +4,126 @@ import axios from "axios";
 
 export const AuthContext = createContext();
 
+const API_URL = "http://localhost:8000/api/users";
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Check authentication on app load
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
-    if (token) fetchUser();
-    else setLoading(false);
+    if (token) {
+      refreshToken();
+    } else {
+      setLoading(false);
+    }
   }, []);
 
-  // Fetch user data from the backend
-  const fetchUser = async () => {
+  const refreshToken = async () => {
     try {
-      const { data } = await axios.get("http://localhost:8000/api/users", {
-        headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` },
-        withCredentials: true,
-      });
-      setUser(data.user);
-    } catch {
+      const response = await axios.post(`${API_URL}/refresh-token`, {}, { withCredentials: true });
+  
+      if (response.data.success) {
+        localStorage.setItem("accessToken", response.data.accessToken);
+        setUser(response.data.user || null);
+      } else {
+        throw new Error("Token refresh failed");
+      }
+    } catch (error) {
+      console.error("Token refresh failed:", error);
       logout();
     } finally {
       setLoading(false);
     }
   };
 
-  // Login function
-  const login = async (formData) => {
+  const login = async (credentials) => {
     try {
-      const { data } = await axios.post("http://localhost:8000/api/users/login", formData, { withCredentials: true });
-      localStorage.setItem("accessToken", data.accessToken);
-      setUser(data.user);
-      navigate("/dashboard");
+      const response = await axios.post(`${API_URL}/login`, credentials, {
+        withCredentials: true,
+        headers: { 'Content-Type': 'application/json' }
+      });
+  
+      if (response.data.success) {
+        localStorage.setItem("accessToken", response.data.accessToken);
+        setUser(response.data.user);
+        navigate("/dashboard");
+        return { success: true };
+      }
     } catch (error) {
-      throw error.response?.data?.message || "Login failed";
+      console.error("Login failed:", error);
+      return {
+        success: false,
+        message: error.response?.data?.message || "Login failed"
+      };
+    }
+  };
+  
+
+  const register = async (userData) => {
+    try {
+      const response = await axios.post(`${API_URL}/register`, userData, {
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.data.success) {
+        // Automatically login after successful registration
+        return await login({
+          email: userData.email,
+          password: userData.password
+        });
+      }
+    } catch (error) {
+      console.error("Registration failed:", error);
+      return {
+        success: false,
+        message: error.response?.data?.message || "Registration failed"
+      };
     }
   };
 
-  // Logout function
   const logout = async () => {
     try {
-      await axios.post("http://localhost:8000/api/users/logout", {}, { withCredentials: true });
+      const token = localStorage.getItem("accessToken");
+      if (token) {
+        await axios.post(
+          `${API_URL}/logout`,
+          {},
+          { 
+            withCredentials: true,
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+      }
     } catch (error) {
-      console.error("Logout failed", error);
+      console.error("Logout failed:", error);
+    } finally {
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      setUser(null);
+      navigate("/"); // Redirect to landing page
     }
-    localStorage.removeItem("accessToken");
-    setUser(null);
-    navigate("/auth");
   };
+  
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        login,
+        logout,
+        register,
+        refreshToken
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
