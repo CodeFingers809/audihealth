@@ -5,9 +5,11 @@ import cookieParser from "cookie-parser";
 const app = express();
 
 app.use(cors({
-    origin: process.env.CORS_ORIGIN,
+    origin: process.env.CORS_ORIGIN || "http://localhost:5173",
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allow these methods
+    allowedHeaders: ['Content-Type', 'Authorization'], // Allow these headers
     credentials: true
-}));
+  }));
 
 app.use(express.json());
 
@@ -25,5 +27,6 @@ import aiModelRouter from "./routes/aimodel.routes.js"
 
 // Declare Routes
 app.use("/api/users", userRouter); 
+app.use("/api/chat", aiModelRouter); 
 
 export {app};
