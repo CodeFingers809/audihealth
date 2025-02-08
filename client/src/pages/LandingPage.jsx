@@ -2,6 +2,7 @@ import React from "react";
 import { ArrowRight, Check, Menu, Mic, Heart, AlertCircle } from "lucide-react";
 import Navbar from "../components/Navbar";
 import { Link } from "react-router-dom";
+import dashboardImg from "../assets/dashboard.png"
 
 const LandingPage = () => {
   return (
@@ -118,7 +119,7 @@ const LandingPage = () => {
                         {/* Screen Content */}
                         <div className="bg-white rounded-lg h-full p-4 overflow-hidden">
                           <img
-                            src="/api/placeholder/500/300"
+                            src={dashboardImg}
                             alt="Voice Analysis Dashboard"
                             className="w-full h-full object-cover rounded"
                           />
