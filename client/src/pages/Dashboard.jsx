@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import ReactMarkdown from "react-markdown";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -8,6 +8,7 @@ import { Mic } from "lucide-react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import moment from "moment-timezone";
+import { AuthContext } from "../context/AuthContext";
 
 const Card = ({ children, className = "" }) => (
   <div className={`bg-white rounded-lg shadow-md p-6 ${className}`}>{children}</div>
@@ -30,6 +31,8 @@ const COLORS = ['#ec4899', '#f472b6', '#fbcfe8'];
 export default function Dashboard() {
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
+    const { user, logout } = useContext(AuthContext);
+  
 
   useEffect(() => {
     fetchDashboardData();
@@ -79,7 +82,8 @@ export default function Dashboard() {
       <div className="container mx-auto p-6 space-y-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
           <div>
-            <h1 className="text-3xl font-bold text-gray-800">Voice Health Dashboard</h1>
+            <h1 className="text-3xl font-bold text-pink-500">Welcome, {user.fullName}</h1>
+            <h1 className="text-xl font-bold text-gray-800">Voice Health Dashboard</h1>
             <p className="text-gray-600 mt-1">Track your vocal performance and health</p>
           </div>
 

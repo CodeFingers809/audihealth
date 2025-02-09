@@ -107,7 +107,7 @@ const Navbar = () => {
               {user ? (
                 <>
                   <span className="text-gray-600 font-medium">
-                    Welcome, {user.name}
+                    Welcome, {user.fullName}
                   </span>
                   <button
                     onClick={() => {
