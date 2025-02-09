@@ -9,6 +9,7 @@ import ExercisesPage from "./pages/Exercises";
 import AuthPages from "./pages/AuthPages";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
+import { Map } from "./components/Map.jsx";
 
 const App = () => {
   return (
@@ -16,6 +17,7 @@ const App = () => {
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<LandingPage />} />
+        <Route path="/map" element={<Map />} />
         <Route path="/auth" element={<AuthPages />} />
 
         {/* Protected Routes */}

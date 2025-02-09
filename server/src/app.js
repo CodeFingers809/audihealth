@@ -20,11 +20,13 @@ import userRouter from "./routes/user.routes.js"
 import aiModelRouter from "./routes/aimodel.routes.js"
 import reportRouter from "./routes/report.routes.js";
 import exerciseRoutes from "./routes/exercise.routes.js";
+import doctorRoutes from "./routes/doctor.routes.js";
 
 // Routes
 app.use("/api/users", userRouter);
 app.use("/api/chat", aiModelRouter);
 app.use("/api/reports", reportRouter);
 app.use("/api/exercises", exerciseRoutes);
+app.use("/api/doctors", doctorRoutes);
 
 export { app };
