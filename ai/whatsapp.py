@@ -8,6 +8,46 @@ from werkzeug.utils import secure_filename
 from urllib.parse import urlparse
 import mimetypes
 import magic
+from pydub import AudioSegment
+
+
+def convert_to_wav(input_path):
+    """Convert any audio file to WAV format"""
+    try:
+        # Get the file extension
+        file_extension = os.path.splitext(input_path)[1].lower()
+        
+        # Load the audio file based on its format
+        if file_extension == '.mp3':
+            audio = AudioSegment.from_mp3(input_path)
+        elif file_extension == '.ogg':
+            audio = AudioSegment.from_ogg(input_path)
+        elif file_extension == '.flac':
+            audio = AudioSegment.from_file(input_path, format='flac')
+        elif file_extension == '.wav':
+            return input_path  # Already WAV format
+        elif file_extension == '.m4a':
+            audio = AudioSegment.from_file(input_path, format='m4a')
+        else:
+            # Try to load the file using the extension as format
+            audio = AudioSegment.from_file(input_path, format=file_extension[1:])
+        
+        # Generate output path
+        output_path = os.path.splitext(input_path)[0] + '.wav'
+        
+        # Export as WAV
+        audio.export(output_path, format='wav')
+        
+        # Remove the original file if conversion successful
+        if os.path.exists(output_path) and input_path != output_path:
+            os.remove(input_path)
+            
+        return output_path
+    
+    except Exception as e:
+        app.logger.error(f"Error converting audio to WAV: {str(e)}")
+        return input_path
+
 
 # Directory to save received media files
 MEDIA_DIR = "received_media"
@@ -108,6 +148,8 @@ def generate_filename(original_url, sender_number, media_type = None):
         extension = ""
     extension = get_file_extension(media_type)
     
+    # Always use .wav extension since we're converting everything to WAV
+    extension = '.wav'
     # Create the new filename
     new_filename = f"{base_name}_{sender_number}{extension}"
     
@@ -188,7 +230,9 @@ def whatsapp_reply():
                 with open(filepath, "wb") as f:
                     f.write(media_content.content)
                 
-                app.logger.info(f"File saved successfully at: {filepath}")
+                # app.logger.info(f"File saved successfully at: {filepath}")
+                wav_filepath = convert_to_wav(filepath)
+                app.logger.info(f"File converted and saved as WAV at: {wav_filepath}")
                 
                 if os.path.exists(DEFAULT_REPORT_PATH):
                     message = response.message("Audio received! Here's your report:")
@@ -244,6 +288,16 @@ def upload_file():
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
         return "File uploaded successfully!"
+    
+    if file:
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
+        
+        # Convert uploaded file to WAV
+        wav_filepath = convert_to_wav(filepath)
+        return f"File uploaded and converted to WAV successfully at {wav_filepath}!"
+
 
 
 if __name__ == "__main__":
