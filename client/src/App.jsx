@@ -17,12 +17,12 @@ const App = () => {
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<LandingPage />} />
-        <Route path="/map" element={<Map />} />
         <Route path="/auth" element={<AuthPages />} />
 
         {/* Protected Routes */}
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
+            <Route path="/map" element={<Map />} />
             <Route path="/health" element={<HealthCheck />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/audibuddy" element={<AudiBuddy />} />

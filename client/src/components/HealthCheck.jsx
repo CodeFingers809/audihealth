@@ -152,7 +152,7 @@ const HealthCheck = () => {
 
               <button onClick={handleDiagnose} className="mt-8 rounded-full px-8 py-3 text-lg bg-pink-500 text-white">
                 {isDiagnosing ? "Diagnosing..." : "Start Diagnosis"}
-                <ArrowRight className="ml-2" size={18} />
+                <ArrowRight className="ml-2 inline" size={18} />
               </button>
             </div>
 

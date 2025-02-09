@@ -85,7 +85,7 @@ export default function Dashboard() {
 
           <Link to="/health">
             <Button className="bg-pink-500 hover:bg-pink-600 text-white">
-              Start New Recording <Mic className="ml-2 h-4 w-4" />
+              Start New Recording <Mic className="ml-2 h-4 w-4 inline" />
             </Button>
           </Link>
         </div>
